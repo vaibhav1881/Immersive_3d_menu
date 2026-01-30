@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "build": "echo 'No build step required'",
     "dev": "node src/server.js",
     "seed": "node src/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
