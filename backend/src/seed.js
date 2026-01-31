@@ -16,12 +16,21 @@ const seedData = async () => {
         await Dish.deleteMany({});
         await Table.deleteMany({});
 
-        console.log('👤 Creating demo user...');
-        const user = await User.create({
+        console.log('👤 Creating demo users...');
+        const adminUser = await User.create({
             email: 'demo@restaurant.com',
             password: 'demo123456',
             name: 'Demo Restaurant Owner',
-            role: 'restaurant_owner',
+            role: 'admin',
+            isEmailVerified: true
+        });
+
+        const customerUser = await User.create({
+            email: 'customer@example.com',
+            password: 'customer123',
+            name: 'John Doe',
+            role: 'customer',
+            phone: '+91 98765 00000',
             isEmailVerified: true
         });
 
@@ -29,7 +38,7 @@ const seedData = async () => {
         const restaurant = await Restaurant.create({
             name: 'The Spice Garden',
             description: 'Experience authentic Indian cuisine with a modern twist. Our dishes are crafted with love and served with passion.',
-            owner: user._id,
+            owner: adminUser._id,
             cuisine: ['Indian', 'Asian', 'Fusion'],
             address: {
                 street: '123 Food Street',
@@ -53,9 +62,9 @@ const seedData = async () => {
             }
         });
 
-        // Update user with restaurant
-        user.restaurant = restaurant._id;
-        await user.save();
+        // Update admin user with restaurant
+        adminUser.restaurant = restaurant._id;
+        await adminUser.save();
 
         console.log('📂 Creating categories...');
         const categories = await Category.create([
