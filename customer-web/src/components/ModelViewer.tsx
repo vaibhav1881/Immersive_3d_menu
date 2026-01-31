@@ -173,21 +173,6 @@ export default function ModelViewer({ dish, isOpen, onClose, apiUrl }: ModelView
             containerRef.current.innerHTML = '';
             containerRef.current.appendChild(mv);
             modelViewerRef.current = mv;
-
-            // Set a timeout to force fallback if model doesn't load within 10 seconds
-            const loadTimeout = setTimeout(() => {
-                if (isLoading && modelUrl !== demoModelUrl) {
-                    console.log('Model loading timeout, switching to demo model...');
-                    try {
-                        mv.setAttribute('src', demoModelUrl);
-                    } catch (error) {
-                        console.error('Timeout fallback error:', error);
-                        setIsLoading(false);
-                    }
-                }
-            }, 10000);
-
-            return () => clearTimeout(loadTimeout);
         };
 
         return () => {
