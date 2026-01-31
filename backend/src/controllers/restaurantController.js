@@ -40,6 +40,22 @@ const createRestaurant = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Get all restaurants (Public)
+ * @route   GET /api/restaurants
+ * @access  Public
+ */
+const getAllRestaurants = asyncHandler(async (req, res) => {
+    const restaurants = await Restaurant.find({ isActive: true })
+        .select('name description cuisine address contact logo coverImage')
+        .sort('-createdAt');
+
+    res.json({
+        success: true,
+        data: restaurants
+    });
+});
+
+/**
  * @desc    Get restaurant by ID (Public)
  * @route   GET /api/restaurants/:id
  * @access  Public
@@ -270,6 +286,7 @@ const getRestaurantMenu = asyncHandler(async (req, res) => {
 
 module.exports = {
     createRestaurant,
+    getAllRestaurants,
     getRestaurant,
     getMyRestaurant,
     updateRestaurant,

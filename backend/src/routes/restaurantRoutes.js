@@ -4,6 +4,7 @@ const { restaurantController } = require('../controllers');
 const { protect, validateRestaurant, validateMongoId } = require('../middleware');
 
 // Public routes
+router.get('/', restaurantController.getAllRestaurants);
 router.get('/:id', restaurantController.getRestaurant);
 router.get('/:id/menu', restaurantController.getRestaurantMenu);
 
