@@ -41,8 +41,23 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
-// Static files (uploads)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Static files (uploads) with CORS headers
+app.use('/uploads', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+}, express.static(path.join(__dirname, '../uploads'), {
+    setHeaders: (res, path) => {
+        // Set proper MIME types for 3D models
+        if (path.endsWith('.glb')) {
+            res.setHeader('Content-Type', 'model/gltf-binary');
+        } else if (path.endsWith('.gltf')) {
+            res.setHeader('Content-Type', 'model/gltf+json');
+        }
+    }
+}));
 
 // API routes
 app.use('/api', routes);

@@ -86,9 +86,14 @@ export default function ModelViewer({ dish, isOpen, onClose, apiUrl }: ModelView
             // Remove /api from the base URL for static file serving
             const baseUrl = apiUrl.replace('/api', '');
 
-            const modelUrl = dish.modelUrl?.startsWith('http')
+            // Use a public demo model as fallback if model URL is not accessible
+            const demoModelUrl = 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
+
+            let modelUrl = dish.modelUrl?.startsWith('http')
                 ? dish.modelUrl
-                : `${baseUrl}${dish.modelUrl}`;
+                : dish.modelUrl
+                    ? `${baseUrl}${dish.modelUrl}`
+                    : demoModelUrl;
 
             const posterUrl = dish.thumbnailUrl?.startsWith('http')
                 ? dish.thumbnailUrl
@@ -132,6 +137,17 @@ export default function ModelViewer({ dish, isOpen, onClose, apiUrl }: ModelView
                 const mvAny = mv as any;
                 if (mvAny.canActivateAR) {
                     setArSupported(true);
+                }
+            });
+
+            mv.addEventListener('error', (event: any) => {
+                console.error('Model loading error:', event);
+                // Try fallback to demo model if original fails
+                if (modelUrl !== demoModelUrl) {
+                    console.log('Retrying with demo model...');
+                    mv.setAttribute('src', demoModelUrl);
+                } else {
+                    setIsLoading(false);
                 }
             });
 
