@@ -113,6 +113,8 @@ export default function ModelViewer({ dish, isOpen, onClose, apiUrl }: ModelView
             mv.setAttribute('environment-image', 'neutral');
             mv.setAttribute('touch-action', 'pan-y');
             mv.setAttribute('interaction-prompt', 'none');
+            mv.setAttribute('loading', 'eager');
+            mv.setAttribute('reveal', 'auto');
 
             // AR configuration - prioritize scene-viewer for better Android compatibility
             mv.setAttribute('ar', '');
@@ -132,32 +134,60 @@ export default function ModelViewer({ dish, isOpen, onClose, apiUrl }: ModelView
             mv.appendChild(arButton);
 
             mv.addEventListener('load', () => {
-                setIsLoading(false);
-                // Check if AR is available on this model-viewer instance
-                const mvAny = mv as any;
-                if (mvAny.canActivateAR) {
-                    setArSupported(true);
+                try {
+                    setIsLoading(false);
+                    // Check if AR is available on this model-viewer instance
+                    const mvAny = mv as any;
+                    if (mvAny.canActivateAR) {
+                        setArSupported(true);
+                    }
+                } catch (error) {
+                    console.error('Error in load handler:', error);
+                    setIsLoading(false);
                 }
             });
 
             mv.addEventListener('error', (event: any) => {
                 console.error('Model loading error:', event);
+                setIsLoading(false);
                 // Try fallback to demo model if original fails
                 if (modelUrl !== demoModelUrl) {
                     console.log('Retrying with demo model...');
-                    mv.setAttribute('src', demoModelUrl);
-                } else {
-                    setIsLoading(false);
+                    try {
+                        mv.setAttribute('src', demoModelUrl);
+                        setIsLoading(true);
+                    } catch (error) {
+                        console.error('Failed to load fallback model:', error);
+                    }
                 }
             });
 
             mv.addEventListener('ar-status', (event: any) => {
-                console.log('AR Status:', event.detail.status);
+                try {
+                    console.log('AR Status:', event.detail.status);
+                } catch (error) {
+                    console.error('AR status error:', error);
+                }
             });
 
             containerRef.current.innerHTML = '';
             containerRef.current.appendChild(mv);
             modelViewerRef.current = mv;
+
+            // Set a timeout to force fallback if model doesn't load within 10 seconds
+            const loadTimeout = setTimeout(() => {
+                if (isLoading && modelUrl !== demoModelUrl) {
+                    console.log('Model loading timeout, switching to demo model...');
+                    try {
+                        mv.setAttribute('src', demoModelUrl);
+                    } catch (error) {
+                        console.error('Timeout fallback error:', error);
+                        setIsLoading(false);
+                    }
+                }
+            }, 10000);
+
+            return () => clearTimeout(loadTimeout);
         };
 
         return () => {
